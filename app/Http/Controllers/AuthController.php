@@ -118,7 +118,7 @@ class AuthController extends Controller
             case 'pelanggan':
                 return redirect()->route('pelanggan.dashboard');
             default:
-                return redirect()->route('login'); // Redirect ke dashboard umum jika role tidak terdaftar
+                return redirect()->route('login');
         }
     }
 }

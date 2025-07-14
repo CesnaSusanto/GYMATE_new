@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('username', 100)->unique(); // Menggunakan 'username' sebagai pengganti 'name' dan menjadikannya unique
             $table->string('password', 255); // Password
             // $table->string('email')->unique()->nullable(); // Email, bisa null jika hanya pakai username
-            $table->timestamp('email_verified_at')->nullable();
+            // $table->timestamp('email_verified_at')->nullable();
             $table->enum('role', ['pelanggan', 'personal_trainer', 'customer_service'])->default('pelanggan');
             $table->rememberToken(); // Untuk fitur "remember me"
             $table->timestamps(); // created_at dan updated_at
