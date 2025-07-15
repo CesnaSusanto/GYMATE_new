@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('kartu', function (Blueprint $table) {
             $table->id('id_kartu');
-            $table->foreignId('id_personal_trainer')->constrained('personal_trainer', 'id_personal_trainer')->onDelete('cascade');
-            $table->foreignId('id_pelanggan')->constrained('pelanggan', 'id_pelanggan')->onDelete('cascade');
+            $table->foreignId('id_personal_trainer')->nullable()->constrained('personal_trainer', 'id_personal_trainer')->onDelete('set null');
+            $table->foreignId('id_pelanggan')->constrained('pelanggan', 'id_pelanggan')->onDelete('cascade'); // Foreign Key ke pelanggan
             $table->date('tanggal_latihan');
             $table->string('kegiatan_latihan', 255); // Panjang 255 untuk kegiatan latihan
             $table->text('catatan_latihan')->nullable(); // Text sudah baik untuk panjang tak terbatas

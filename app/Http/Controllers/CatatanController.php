@@ -6,135 +6,124 @@ namespace App\Http\Controllers;
 use App\Models\Catatan; // Import Model Catatan
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // Import Auth Facade
+use Illuminate\Support\Facades\Log;
 
 class CatatanController extends Controller
 {
-    /**
-     * Tampilkan daftar catatan.
-     * Hanya Admin dan Pelanggan yang bisa melihat (Pelanggan hanya catatan mereka sendiri).
-     */
-    public function index()
+    public function createCatatan()
     {
-        $userRole = Auth::user()->role;
-        $catatanList = [];
-
-        if ($userRole === 'admin') {
-            $catatanList = Catatan::all();
-        } elseif ($userRole === 'pelanggan') {
-            // Pastikan user memiliki relasi dengan model Pelanggan
-            if (Auth::user()->pelanggan) {
-                $pelangganId = Auth::user()->pelanggan->id_pelanggan;
-                $catatanList = Catatan::where('id_pelanggan', $pelangganId)->get();
-            } else {
-                abort(403, 'Anda tidak memiliki profil pelanggan.');
-            }
-        } else {
-            abort(403, 'Akses Dilarang. Anda tidak memiliki izin untuk melihat catatan.');
+        // Anda bisa menambahkan logic otorisasi di sini jika diperlukan
+        $user = Auth::user();
+        if ($user->role !== 'pelanggan') {
+            abort(403, 'Akses Dilarang.');
         }
 
-        return view('catatan.index', compact('catatanList'));
+        return view('pelanggan.catatan_latihan.create'); // Akan mengarahkan ke view baru
     }
-
-    /**
-     * Tampilkan form untuk membuat Catatan baru.
-     * Hanya Admin dan Pelanggan yang bisa mengakses.
-     */
-    public function create()
+    public function storeCatatan(Request $request)
     {
-        $userRole = Auth::user()->role;
-        if (!in_array($userRole, ['admin', 'pelanggan'])) {
-            abort(403, 'Akses Dilarang. Anda tidak memiliki izin untuk menambah catatan.');
-        }
+        $user = Auth::user();
+        $pelanggan = $user->pelanggan;
 
-        return view('catatan.create');
-    }
-
-    /**
-     * Simpan Catatan yang baru dibuat.
-     * Hanya Admin dan Pelanggan yang bisa mengakses.
-     */
-    public function store(Request $request)
-    {
-        $userRole = Auth::user()->role;
-        if (!in_array($userRole, ['admin', 'pelanggan'])) {
-            abort(403, 'Akses Dilarang. Anda tidak memiliki izin untuk menyimpan catatan.');
+        if (!$pelanggan) {
+            return redirect()->back()->withErrors('Data pelanggan tidak ditemukan.');
         }
 
         $request->validate([
-            'tanggal_latihan' => 'required|date',
-            'kegiatan_latihan' => 'required|string|max:255',
-            'catatan_latihan' => 'nullable|string',
+            'tanggal_latihan' => ['required', 'date'],
+            'kegiatan_latihan' => ['required', 'string', 'max:255'],
+            'catatan_latihan' => ['nullable', 'string'],
         ]);
 
-        // Otomatis set id_pelanggan dari user yang sedang login
-        // Pastikan user->pelanggan tidak null
-        if (Auth::user()->pelanggan) {
-            $request->merge(['id_pelanggan' => Auth::user()->pelanggan->id_pelanggan]);
-        } else {
-            abort(400, 'Profil pelanggan tidak ditemukan.'); // Error jika user tidak terhubung ke profil pelanggan
+        try {
+            Catatan::create([
+                'id_pelanggan' => $pelanggan->id_pelanggan,
+                'tanggal_latihan' => $request->tanggal_latihan,
+                'kegiatan_latihan' => $request->kegiatan_latihan,
+                'catatan_latihan' => $request->catatan_latihan,
+            ]);
+
+            return redirect()->route('pelanggan.dashboard', ['tab' => 'myNotes'])->with('success', 'Catatan latihan berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            Log::error('Error adding catatan: ' . $e->getMessage());
+            return redirect()->back()->withInput()->withErrors('Gagal menambahkan catatan. Silakan coba lagi.');
         }
-
-
-        Catatan::create($request->all());
-
-        return redirect()->route('pelanggan.catatan.index')
-                         ->with('success', 'Catatan latihan berhasil ditambahkan!');
     }
 
-    // Anda perlu menambahkan method show, edit, update, destroy di sini
-    // dengan pengecekan role dan kepemilikan data yang sesuai.
-    // Misalnya, pelanggan hanya bisa mengedit/menghapus catatan milik mereka sendiri.
-    public function edit(Catatan $catatan)
+    /**
+     * Menampilkan formulir untuk mengedit catatan latihan tertentu.
+     * Menggunakan Route Model Binding untuk Catatan.
+     */
+    public function editCatatan(Catatan $catatan)
     {
-        $userRole = Auth::user()->role;
-        if (!in_array($userRole, ['admin', 'pelanggan'])) {
-            abort(403, 'Akses Dilarang.');
+        $user = Auth::user();
+        $pelanggan = $user->pelanggan;
+
+        // Pastikan catatan ini milik pelanggan yang sedang login
+        if (!$pelanggan || $catatan->id_pelanggan !== $pelanggan->id_pelanggan) {
+            abort(403, 'Akses Dilarang. Anda tidak memiliki izin untuk mengedit catatan ini.');
         }
 
-        if ($userRole === 'pelanggan' && $catatan->id_pelanggan !== Auth::user()->pelanggan->id_pelanggan) {
-            abort(403, 'Akses Dilarang. Anda hanya dapat mengedit catatan yang Anda buat.');
-        }
-
-        return view('catatan.edit', compact('catatan'));
+        // Anda bisa membuat view terpisah untuk edit, misalnya 'pelanggan.catatan.edit'
+        // atau mengembalikan data untuk modal/inline edit.
+        // Untuk contoh ini, kita akan mengasumsikan view terpisah.
+        return view('pelanggan.catatan_latihan.edit', compact('catatan'));
     }
 
-    public function update(Request $request, Catatan $catatan)
+    /**
+     * Memperbarui catatan latihan tertentu di database.
+     * Menggunakan Route Model Binding untuk Catatan.
+     */
+    public function updateCatatan(Request $request, Catatan $catatan)
     {
-        $userRole = Auth::user()->role;
-        if (!in_array($userRole, ['admin', 'pelanggan'])) {
-            abort(403, 'Akses Dilarang.');
-        }
+        $user = Auth::user();
+        $pelanggan = $user->pelanggan;
 
-        if ($userRole === 'pelanggan' && $catatan->id_pelanggan !== Auth::user()->pelanggan->id_pelanggan) {
-            abort(403, 'Akses Dilarang. Anda hanya dapat mengupdate catatan yang Anda buat.');
+        // Pastikan catatan ini milik pelanggan yang sedang login
+        if (!$pelanggan || $catatan->id_pelanggan !== $pelanggan->id_pelanggan) {
+            abort(403, 'Akses Dilarang. Anda tidak memiliki izin untuk memperbarui catatan ini.');
         }
 
         $request->validate([
-            'tanggal_latihan' => 'required|date',
-            'kegiatan_latihan' => 'required|string|max:255',
-            'catatan_latihan' => 'nullable|string',
+            'tanggal_latihan' => ['required', 'date'],
+            'kegiatan_latihan' => ['required', 'string', 'max:255'],
+            'catatan_latihan' => ['nullable', 'string'],
         ]);
 
-        $catatan->update($request->all());
+        try {
+            $catatan->update([
+                'tanggal_latihan' => $request->tanggal_latihan,
+                'kegiatan_latihan' => $request->kegiatan_latihan,
+                'catatan_latihan' => $request->catatan_latihan,
+            ]);
 
-        return redirect()->route('pelanggan.catatan.index')
-                         ->with('success', 'Catatan latihan berhasil diperbarui!');
+            return redirect()->route('pelanggan.dashboard', ['tab' => 'myNotes'])->with('success', 'Catatan latihan berhasil diperbarui!');
+        } catch (\Exception $e) {
+            Log::error('Error updating catatan: ' . $e->getMessage());
+            return redirect()->back()->withInput()->withErrors('Gagal memperbarui catatan. Silakan coba lagi.');
+        }
     }
 
-    public function destroy(Catatan $catatan)
+    /**
+     * Menghapus catatan latihan tertentu dari database.
+     * Menggunakan Route Model Binding untuk Catatan.
+     */
+    public function destroyCatatan(Catatan $catatan)
     {
-        $userRole = Auth::user()->role;
-        if (!in_array($userRole, ['admin', 'pelanggan'])) {
-            abort(403, 'Akses Dilarang.');
+        $user = Auth::user();
+        $pelanggan = $user->pelanggan;
+
+        // Pastikan catatan ini milik pelanggan yang sedang login
+        if (!$pelanggan || $catatan->id_pelanggan !== $pelanggan->id_pelanggan) {
+            abort(403, 'Akses Dilarang. Anda tidak memiliki izin untuk menghapus catatan ini.');
         }
 
-        if ($userRole === 'pelanggan' && $catatan->id_pelanggan !== Auth::user()->pelanggan->id_pelanggan) {
-            abort(403, 'Akses Dilarang. Anda hanya dapat menghapus catatan yang Anda buat.');
+        try {
+            $catatan->delete();
+            return redirect()->route('pelanggan.dashboard', ['tab' => 'myNotes'])->with('success', 'Catatan latihan berhasil dihapus!');
+        } catch (\Exception $e) {
+            Log::error('Error deleting catatan: ' . $e->getMessage());
+            return redirect()->back()->withErrors('Gagal menghapus catatan. Silakan coba lagi.');
         }
-
-        $catatan->delete();
-
-        return redirect()->route('pelanggan.catatan.index')
-                         ->with('success', 'Catatan latihan berhasil dihapus!');
-    }
+    }    
 }

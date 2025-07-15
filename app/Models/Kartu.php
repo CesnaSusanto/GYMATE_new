@@ -9,11 +9,9 @@ class Kartu extends Model
 {
     use HasFactory;
 
-    // Menentukan nama tabel jika tidak mengikuti konvensi jamak (plural)
-    protected $table = 'kartu';
-
-    // Menentukan nama primary key jika bukan 'id'
-    protected $primaryKey = 'id_kartu';
+    protected $table = 'kartu'; // Pastikan sesuai dengan nama tabel Anda
+    protected $primaryKey = 'id_kartu'; // Pastikan ini sesuai dengan PK di skema
+    public $incrementing = true;
 
     /**
      * The attributes that are mass assignable.
@@ -21,8 +19,8 @@ class Kartu extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'id_personal_trainer',
         'id_pelanggan',
+        'id_personal_trainer',
         'tanggal_latihan',
         'kegiatan_latihan',
         'catatan_latihan',

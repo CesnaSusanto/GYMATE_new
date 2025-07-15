@@ -13,7 +13,9 @@ class PersonalTrainer extends Model
     protected $table = 'personal_trainer';
 
     // Menentukan nama primary key jika bukan 'id'
-    protected $primaryKey = 'id_personal_trainer';
+    protected $primaryKey = 'id_personal_trainer'; // Sesuai skema database Anda
+    public $incrementing = true; // Jika primary key auto-incrementing
+    protected $keyType = 'int'; // Tipe data primary ke
 
     /**
      * The attributes that are mass assignable.
@@ -31,6 +33,10 @@ class PersonalTrainer extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
+    public function pelanggan()
+    {
+        return $this->hasMany(Pelanggan::class, 'id_personal_trainer', 'id_personal_trainer');
     }
 
     // Hubungan One-to-Many dengan Kartu

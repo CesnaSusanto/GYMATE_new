@@ -9,6 +9,7 @@ use App\Models\CustomerService;
 use App\Models\PersonalTrainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class CustomerServiceController extends Controller
@@ -18,6 +19,7 @@ class CustomerServiceController extends Controller
         // Metode ini mungkin kosong atau memiliki logika lain
     }
 
+    // SHOW MEMBER AND TRAINER
     public function showManagementLists(Request $request)
     {
 
@@ -67,13 +69,16 @@ class CustomerServiceController extends Controller
         return view('cs.dashboard', compact('members', 'trainers', 'memberSearch', 'trainerSearch')); // Pastikan nama view ini 'cs.management'
     }
 
+
+    // EDIT MEMBER
     public function editMember($id)
     {
         $userRole = Auth::user()->role;
         if ($userRole !== 'customer_service') {
             abort(403, 'Akses Dilarang. Anda tidak memiliki izin untuk mengedit member.');
         }
-
+        $trainersQuery = PersonalTrainer::query();
+        $personalTrainers = $trainersQuery->get();
         // Temukan pelanggan berdasarkan id_pelanggan dan muat relasi user-nya
         $member = Pelanggan::with('user')->find($id);
 
@@ -87,7 +92,7 @@ class CustomerServiceController extends Controller
              abort(403, 'Akses Dilarang. Ini bukan member yang valid.');
         }
 
-        return view('cs.edit_member', compact('member'));
+        return view('cs.edit_member', compact('member','personalTrainers'));
     }
 
     /**
@@ -97,6 +102,9 @@ class CustomerServiceController extends Controller
      * @param int $id ID pelanggan
      * @return \Illuminate\Http\RedirectResponse
      */
+
+    
+    //  UPDATE MEMBER
     public function updateMember(Request $request, $id)
     {
         $userRole = Auth::user()->role;
@@ -119,17 +127,9 @@ class CustomerServiceController extends Controller
                 'string',
                 'min:3',
                 'max:255',
-                // Pastikan 'user_id' adalah nama kolom primary key di tabel 'users' Anda
                 Rule::unique('users')->ignore($member->user->user_id, 'user_id'),
             ],
-            // Hapus validasi untuk 'email' di sini jika tidak digunakan di tabel pelanggan
-            // 'email' => [
-            //     'required',
-            //     'string',
-            //     'email',
-            //     'max:255',
-            //     Rule::unique('users')->ignore($member->user->user_id, 'user_id'),
-            // ],
+
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan', // Sesuaikan dengan opsi yang Anda miliki
             'no_telp' => 'nullable|string|max:20',
             'paket_layanan' => 'required|string|max:255',
@@ -139,16 +139,8 @@ class CustomerServiceController extends Controller
             // 'password' => 'nullable|string|min:8|confirmed', // Jika ingin memungkinkan perubahan password
         ]);
 
-        // Update data di tabel `users` (hanya username, email tetap di users jika ada di sana)
         if ($member->user) {
             $member->user->username = $request->username;
-            // Jika Anda memang tidak memakai email di `pelanggan` dan `users`, hapus baris ini.
-            // Namun, jika email ada di `users` dan hanya tidak ditampilkan/diedit dari form ini, biarkan saja.
-            // $member->user->email = $request->email; // Baris ini dihapus jika email tidak diinput dari form
-            // Jika Anda ingin mengupdate password:
-            // if ($request->filled('password')) {
-            //     $member->user->password = Hash::make($request->password);
-            // }
             $member->user->save();
         }
 
@@ -166,6 +158,9 @@ class CustomerServiceController extends Controller
         return redirect()->route('cs.dashboard')->with('success', 'Data member berhasil diperbarui.');
     }
 
+
+
+    // DELETE MEMBER
     public function deleteMember($id)
     {
         $userRole = Auth::user()->role;
@@ -179,17 +174,17 @@ class CustomerServiceController extends Controller
             return redirect()->route('cs.dashboard')->with('error', 'Member tidak ditemukan.');
         }
 
-        // Sama seperti di atas, jika onDelete('cascade') sudah diatur,
-        // menghapus member akan otomatis menghapus user terkait.
-        // if ($member->user) {
-        //     $member->user->delete();
-        // }
-
         $member->delete(); // Ini akan menghapus member dan, karena onDelete('cascade'), user terkait juga
+
+        if ($member->user) {
+            $member->user->delete();
+        }
 
         return redirect()->route('cs.dashboard')->with('success', 'Member berhasil dihapus.');
     }
 
+
+    // EDIT TRAINER
     public function editTrainer($id)
     {
         $userRole = Auth::user()->role;
@@ -217,6 +212,20 @@ class CustomerServiceController extends Controller
      * @param int $id ID personal trainer
      * @return \Illuminate\Http\RedirectResponse
      */
+
+    
+    // CREATE TRAINER
+    public function createTrainer()
+    {
+        // Pastikan hanya customer_service yang bisa mengakses
+        if (Auth::user()->role !== 'customer_service') {
+            abort(403, 'Akses Dilarang.');
+        }
+        return view('cs.create_trainer');
+    }
+
+
+    // UPDATE TRAINER
     public function updateTrainer(Request $request, $id)
     {
         $userRole = Auth::user()->role;
@@ -242,10 +251,6 @@ class CustomerServiceController extends Controller
             ],
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             'no_telp' => 'nullable|string|max:20',
-            // Hapus validasi untuk 'spesialisasi' dan 'jadwal_pelatihan'
-            // 'spesialisasi' => 'nullable|string|max:255',
-            // 'jadwal_pelatihan' => 'nullable|string|max:255',
-            // 'password' => 'nullable|string|min:8|confirmed',
         ]);
 
         if ($trainer->user) {
@@ -253,17 +258,56 @@ class CustomerServiceController extends Controller
             $trainer->user->save();
         }
 
-        // Update data di tabel `personal_trainer`
         $trainer->nama_personal_trainer = $request->nama_personal_trainer;
         $trainer->jenis_kelamin = $request->jenis_kelamin;
         $trainer->no_telp = $request->no_telp;
-        // Hapus update untuk 'spesialisasi' dan 'jadwal_pelatihan'
-        // $trainer->spesialisasi = $request->spesialisasi;
-        // $trainer->jadwal_pelatihan = $request->jadwal_pelatihan;
         $trainer->save();
 
         return redirect()->route('cs.dashboard')->with('success', 'Data Personal Trainer berhasil diperbarui.');
     }
+
+
+    // STORE TRAINER
+    public function storeTrainer(Request $request)
+    {
+        // Pastikan hanya customer_service yang bisa mengakses
+    if (Auth::user()->role !== 'customer_service') {
+        abort(403, 'Akses Dilarang.');
+    }
+
+    // Validasi data input
+    // dd($request->all());
+    $validatedData = $request->validate([
+        'username' => ['required', 'string', 'max:255', 'unique:users'],
+        'password' => ['required', 'string', 'min:8', 'confirmed'],
+        'nama_personal_trainer' => ['required', 'string', 'max:255'],
+        'jenis_kelamin' => ['required', 'string', Rule::in(['Laki-laki', 'Perempuan'])],
+        'no_telp' => ['required', 'string', 'max:15'],
+    ]);
+    // dd($validatedData);
+
+    // 1. Buat user baru dengan role 'personal_trainer'
+    // DI SINI Anda menetapkan role-nya!
+    $user = User::create([
+        'username' => $validatedData['username'],
+        'password' => Hash::make($validatedData['password']),
+        'role' => 'personal_trainer', // <--- BARIS INI PENTING!
+    ]);
+    // dd($user);
+
+    // 2. Buat personal trainer baru dan hubungkan dengan user yang baru dibuat
+    PersonalTrainer::create([
+        'user_id' => $user->user_id, // Menggunakan ID dari user yang baru dibuat
+        'nama_personal_trainer' => $validatedData['nama_personal_trainer'],
+        'jenis_kelamin' => $validatedData['jenis_kelamin'],
+        'no_telp' => $validatedData['no_telp'],
+    ]);
+
+    return redirect()->route('cs.dashboard')->with('success', 'Personal Trainer berhasil ditambahkan.');
+    }
+
+
+    // DELETE TRAINER
     public function deleteTrainer($id)
     {
         $userRole = Auth::user()->role;
@@ -280,9 +324,9 @@ class CustomerServiceController extends Controller
         // Jika Anda memiliki onDelete('cascade') di migrasi foreign key user_id,
         // maka menghapus trainer akan otomatis menghapus user terkait.
         // Jika tidak, Anda perlu menghapus user secara manual seperti ini:
-        // if ($trainer->user) {
-        //     $trainer->user->delete();
-        // }
+        if ($trainer->user) {
+            $trainer->user->delete();
+        }
 
         $trainer->delete(); // Ini akan menghapus trainer dan, karena onDelete('cascade'), user terkait juga
 

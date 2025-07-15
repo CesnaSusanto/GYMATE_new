@@ -9,11 +9,9 @@ class Pelanggan extends Model
 {
     use HasFactory;
 
-    // Menentukan nama tabel jika tidak mengikuti konvensi jamak (plural)
     protected $table = 'pelanggan';
-
-    // Menentukan nama primary key jika bukan 'id'
     protected $primaryKey = 'id_pelanggan';
+    public $incrementing = true;
 
     /**
      * The attributes that are mass assignable.
@@ -22,6 +20,7 @@ class Pelanggan extends Model
      */
     protected $fillable = [
         'user_id',
+        'id_personal_trainer',
         'nama_pelanggan',
         'jenis_kelamin',
         'no_telp',
@@ -41,21 +40,24 @@ class Pelanggan extends Model
         'tanggal_bergabung' => 'date', // Otomatis cast ke objek Carbon
     ];
 
-    // Hubungan One-to-One (Inverse) dengan User
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
-    // Hubungan One-to-Many dengan Kartu
+    public function personalTrainer()
+    {
+        return $this->belongsTo(PersonalTrainer::class, 'id_personal_trainer', 'id_personal_trainer');
+    }
+
+    public function catatan()
+    {
+        return $this->hasMany(Catatan::class, 'id_pelanggan', 'id_pelanggan');
+    }
+
     public function kartu()
     {
         return $this->hasMany(Kartu::class, 'id_pelanggan', 'id_pelanggan');
     }
 
-    // Hubungan One-to-Many dengan Catatan
-    public function catatan()
-    {
-        return $this->hasMany(Catatan::class, 'id_pelanggan', 'id_pelanggan');
-    }
 }

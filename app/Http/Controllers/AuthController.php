@@ -1,25 +1,28 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Validation\Rules;
 use App\Models\Pelanggan;
 use App\Models\User;
+use App\Models\PersonalTrainer; // <--- Tambahkan ini
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\QueryException; // <--- Tambahkan ini untuk error handling
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
     public function showLoginForm()
     {
-        // Jika user sudah login, arahkan ke dashboard
         if (Auth::check()) {
-            return redirect('/');
+            return $this->redirectToDashboard(); // Gunakan helper redirect
         }
         return view('auth.login');
     }
-    
+
     public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
@@ -33,79 +36,108 @@ class AuthController extends Controller
             return $this->redirectToDashboard(); // Redirect ke dashboard berdasarkan role
         }
 
-        // Jika autentikasi gagal
         return back()->withErrors([
             'username' => 'Kredensial yang diberikan tidak cocok dengan catatan kami.',
-        ])->onlyInput('username'); // Hanya tampilkan input email yang salah
+        ])->onlyInput('username'); // Hanya tampilkan input username yang salah
     }
 
     public function showRegistrationForm(): \Illuminate\View\View | RedirectResponse
     {
-        // Jika user sudah login, arahkan ke dashboard
         if (Auth::check()) {
-            return redirect('/');
+            return $this->redirectToDashboard(); // Gunakan helper redirect
         }
-        return view('auth.register');
+        $personalTrainers = PersonalTrainer::all();
+        return view('auth.register', compact('personalTrainers'));
     }
 
     public function register(Request $request): RedirectResponse
     {
+        // Untuk debugging, uncomment baris ini untuk melihat semua data yang dikirim dari form
         // dd($request->all());
-        $request->validate([
+
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:255', 'unique:users,username'], // Username harus unik
+            'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'phone_number' => ['nullable', 'string', 'max:20'], // Jika ada field ini
-        
+            'phone_number' => ['nullable', 'string', 'max:20'],
             'jenis_kelamin' => ['required', 'string', 'in:Laki-laki,Perempuan'],
-            'paket_layanan' => ['required', 'string', 'max:50'],
+            'paket_layanan' => ['required', 'string', 'in:biasa,premium'],
             'berat_badan' => ['required', 'numeric', 'min:1'],
             'tinggi_badan' => ['required', 'numeric', 'min:1'],
+            'id_personal_trainer' => ['nullable', 'exists:personal_trainer,id_personal_trainer'],
+        ];
+
+        // Jika paket layanan adalah 'premium', maka id_personal_trainer menjadi wajib
+        if ($request->paket_layanan === 'premium') {
+            $rules['id_personal_trainer'] = ['required', 'exists:personal_trainer,id_personal_trainer'];
+        }
+
+        $request->validate($rules, [
+            'id_personal_trainer.required' => 'Silakan pilih Personal Trainer untuk paket Premium.',
+            'id_personal_trainer.exists' => 'Personal Trainer yang dipilih tidak valid.',
         ]);
 
-        // Buat user baru dengan role 'pelanggan'
-        $user = User::create([
-            'name' => $request->name,
-            'username' => $request->username,
-            'password' => Hash::make($request->password),
-            'role' => 'pelanggan', // HANYA PELANGGAN YANG BISA REGISTER PUBLIK
-        ]);
+        try {
+            // Buat user baru
+            $user = User::create([
+                'username' => $request->username,
+                'password' => Hash::make($request->password), // Password akan di-hash oleh cast di model User
+                'role' => 'pelanggan',
+            ]);
 
-        // Buat profil Pelanggan terkait secara otomatis
-        // Pastikan tabel 'pelanggan' ada dan kolom 'user_id' cocok
-        Pelanggan::create([
-            'user_id' => $user->user_id,
-            'nama_pelanggan' => $request->name, // Menggunakan 'name' dari form user untuk 'nama_pelanggan'
-            'jenis_kelamin' => $request->jenis_kelamin,
-            'no_telp' => $request->phone_number, // Menggunakan 'phone_number' dari form user
-            'tanggal_bergabung' => now(), // Otomatis mengisi tanggal saat ini
-            'paket_layanan' => $request->paket_layanan,
-            'berat_badan' => $request->berat_badan,
-            'tinggi_badan' => $request->tinggi_badan,
-            'status' => 'Aktif', // Nilai default untuk status pelanggan baru
-        ]);
+            // Buat data pelanggan baru
+            Pelanggan::create([
+                'user_id' => $user->user_id, // Menggunakan user_id dari objek $user yang baru dibuat
+                'nama_pelanggan' => $request->name,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'no_telp' => $request->phone_number,
+                'tanggal_bergabung' => now(),
+                'paket_layanan' => $request->paket_layanan,
+                'berat_badan' => $request->berat_badan,
+                'tinggi_badan' => $request->tinggi_badan,
+                'status' => 'Aktif',
+                // Menggunakan id_personal_trainer dari request yang sudah divalidasi
+                'id_personal_trainer' => $request->id_personal_trainer,
+            ]);
 
-        Auth::login($user); // Login user setelah registrasi
+            // Login user yang baru terdaftar
+            Auth::login($user);
+            $request->session()->regenerate(); // Regenerasi sesi untuk keamanan
 
-        $request->session()->regenerate(); // Regenerasi sesi
+            // Redirect ke dashboard berdasarkan role
+            return $this->redirectToDashboard();
 
-        return $this->redirectToDashboard(); // Redirect ke dashboard berdasarkan role
+        } catch (QueryException $e) {
+            // Log error database untuk debugging lebih lanjut
+            Log::error('Registration Query Error: ' . $e->getMessage());
+            // Jika user sudah terbuat tapi pelanggan gagal, hapus user untuk rollback
+            if (isset($user) && $user->exists) {
+                $user->delete();
+            }
+            return redirect()->back()->withInput()->withErrors(['registration_failed' => 'Pendaftaran gagal. Terjadi masalah database. Silakan coba lagi.']);
+        } catch (\Exception $e) {
+            // Log error tak terduga
+            Log::error('Registration Unexpected Error: ' . $e->getMessage());
+            // Jika user sudah terbuat tapi pelanggan gagal, hapus user untuk rollback
+            if (isset($user) && $user->exists) {
+                $user->delete();
+            }
+            return redirect()->back()->withInput()->withErrors(['registration_failed' => 'Pendaftaran gagal. Terjadi kesalahan tak terduga. Silakan hubungi administrator.']);
+        }
     }
 
     public function logout(Request $request): RedirectResponse
     {
-        Auth::logout(); // Logout user
+        Auth::logout();
 
-        $request->session()->invalidate(); // Invalidasi sesi
-        $request->session()->regenerateToken(); // Regenerasi token CSRF
+        $request->session()->invalidate();
+        $request->session()->regenerateToken(); 
 
-        return redirect('login'); // Arahkan ke halaman utama
+        return redirect('login');
     }
 
-    /**
-     * Helper method untuk redirect ke dashboard berdasarkan role.
-     */
-    protected function redirectToDashboard(): RedirectResponse
+
+    public function redirectToDashboard(): RedirectResponse
     {
         $userRole = Auth::user()->role;
         switch ($userRole) {

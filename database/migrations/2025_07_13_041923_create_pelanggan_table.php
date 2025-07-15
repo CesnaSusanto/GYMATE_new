@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('pelanggan', function (Blueprint $table) {
             $table->id('id_pelanggan');
-            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade'); // Pastikan merujuk 'user_id'
+            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade'); // Foreign Key ke users
+            $table->foreignId('id_personal_trainer')->nullable()->constrained('personal_trainer', 'id_personal_trainer')->onDelete('set null');
             $table->string('nama_pelanggan', 255); // Panjang 255 untuk nama
             $table->string('jenis_kelamin', 20)->nullable(); // Panjang 20 untuk jenis kelamin
             $table->string('no_telp', 20)->nullable(); // Panjang 20 untuk nomor telepon
