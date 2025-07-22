@@ -16,12 +16,17 @@
             <div>
                 <div class="bg-red-600 p-4 text-center text-xl font-bold">GYMATE</div>
                 <div class="p-4">
-                    {{-- Link kembali ke dashboard CS, mengaktifkan tab memberList --}}
-                    <a href="{{ route('cs.dashboard', ['tab' => 'memberList']) }}" class="block py-3 px-4 rounded hover:bg-gray-700 text-white font-semibold mb-2">
-                        <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        Kembali ke Dashboard CS
-                    </a>
-                </div>
+    <a href="{{ route('cs.dashboard', ['tab' => 'memberList']) }}"
+       class="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-600 to-blue-500 text-white font-semibold rounded-lg shadow-md hover:from-indigo-700 hover:to-blue-600 transition duration-200 ease-in-out">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+             viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Kembali ke Dashboard CS
+    </a>
+</div>
+
             </div>
             <form action="{{ route('logout') }}" method="POST" class="w-full">
                 @csrf
@@ -59,148 +64,132 @@
                     </div>
                 @endif
 
-                <form action="{{ route('cs.members.update', $member->id_pelanggan) }}" method="POST">
-                    @csrf
-                    @method('PUT') {{-- Penting untuk metode PUT --}}
+                <form action="{{ route('cs.members.update', $member->id_pelanggan) }}" method="POST" class="max-w-5xl mx-auto bg-white shadow-xl rounded-xl p-8 mt-6">
+    @csrf
+    @method('PUT')
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> {{-- Menggunakan grid untuk layout 2 kolom --}}
-                        {{-- Data User --}}
-                        <div>
-                            <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Informasi Akun Login</h2>
-                            <div class="mb-4">
-                                <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Username:</label>
-                                <input type="text" name="username" id="username"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('username') border-red-500 @enderror"
-                                       value="{{ old('username', $member->user->username ?? '') }}" required autocomplete="off">
-                                @error('username')
-                                    <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            {{-- Password tidak ditampilkan di sini untuk alasan keamanan,
-                                 jika ingin mengubah password, buat form terpisah. --}}
-                        </div>
+    <h1 class="text-3xl font-bold text-indigo-500 mb-8 border-b pb-3">Perbarui Profil Member</h1>
 
-                        {{-- Data Pelanggan --}}
-                        <div>
-                            <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Detail Pelanggan</h2>
-                            <div class="mb-4">
-                                <label for="nama_pelanggan" class="block text-gray-700 text-sm font-bold mb-2">Nama Pelanggan:</label>
-                                <input type="text" name="nama_pelanggan" id="nama_pelanggan"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('nama_pelanggan') border-red-500 @enderror"
-                                       value="{{ old('nama_pelanggan', $member->nama_pelanggan) }}" required autocomplete="off">
-                                @error('nama_pelanggan')
-                                    <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {{-- Username --}}
+        <div>
+            <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <input type="text" name="username" id="username"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 @error('username') border-red-500 @enderror"
+                value="{{ old('username', $member->user->username ?? '') }}" required>
+            @error('username')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
+        </div>
 
-                            <div class="mb-4">
-                                <label for="jenis_kelamin" class="block text-gray-700 text-sm font-bold mb-2">Jenis Kelamin:</label>
-                                <select name="jenis_kelamin" id="jenis_kelamin"
-                                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('jenis_kelamin') border-red-500 @enderror"
-                                        required>
-                                    <option value="">Pilih Jenis Kelamin</option> {{-- Tambahkan opsi placeholder --}}
-                                    <option value="Laki-laki" {{ old('jenis_kelamin', $member->jenis_kelamin) == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
-                                    <option value="Perempuan" {{ old('jenis_kelamin', $member->jenis_kelamin) == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
-                                </select>
-                                @error('jenis_kelamin')
-                                    <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+        {{-- Nama --}}
+        <div>
+            <label for="nama_pelanggan" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+            <input type="text" name="nama_pelanggan" id="nama_pelanggan"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 @error('nama_pelanggan') border-red-500 @enderror"
+                value="{{ old('nama_pelanggan', $member->nama_pelanggan) }}" required>
+            @error('nama_pelanggan')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
+        </div>
 
-                            <div class="mb-4">
-                                <label for="no_telp" class="block text-gray-700 text-sm font-bold mb-2">No. Telepon:</label>
-                                <input type="text" name="no_telp" id="no_telp"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('no_telp') border-red-500 @enderror"
-                                       value="{{ old('no_telp', $member->no_telp) }}" autocomplete="off"> {{-- no_telp bisa nullable di registrasi, jadi tidak harus required di sini --}}
-                                @error('no_telp')
-                                    <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+        {{-- Jenis Kelamin --}}
+        <div>
+            <label for="jenis_kelamin" class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
+            <select name="jenis_kelamin" id="jenis_kelamin"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500"
+                required>
+                <option value="">Pilih Jenis Kelamin</option>
+                <option value="Laki-laki" {{ old('jenis_kelamin', $member->jenis_kelamin) == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                <option value="Perempuan" {{ old('jenis_kelamin', $member->jenis_kelamin) == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+            </select>
+        </div>
 
-                            <div class="mb-4">
-                                <label for="paket_layanan" class="block text-gray-700 text-sm font-bold mb-2">Paket Layanan:</label>
-                                <select name="paket_layanan" id="paket_layanan"
-                                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('paket_layanan') border-red-500 @enderror"
-                                        required>
-                                    <option value="">Pilih Paket Layanan</option> {{-- Tambahkan opsi placeholder --}}
-                                    <option value="biasa" {{ old('paket_layanan', $member->paket_layanan) == 'biasa' ? 'selected' : '' }}>Biasa</option>
-                                    <option value="premium" {{ old('paket_layanan', $member->paket_layanan) == 'premium' ? 'selected' : '' }}>Premium</option>
-                                </select>
-                                @error('paket_layanan')
-                                    <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+        {{-- No Telepon --}}
+        <div>
+            <label for="no_telp" class="block text-sm font-medium text-gray-700 mb-1">No. Telepon</label>
+            <input type="text" name="no_telp" id="no_telp"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500"
+                value="{{ old('no_telp', $member->no_telp) }}">
+        </div>
 
-                            {{-- Personal Trainer (hanya muncul jika Premium) --}}
-                            {{-- ID div ini diubah menjadi 'personal_trainer_selection' agar konsisten dengan JS --}}
-                            <div id="personal_trainer_selection" class="mb-4 {{ old('paket_layanan', $member->paket_layanan) == 'premium' ? '' : 'hidden' }}">
-                                <label for="id_personal_trainer" class="block text-gray-700 text-sm font-bold mb-2">Pilih Personal Trainer:</label>
-                                <select name="id_personal_trainer" id="id_personal_trainer"
-                                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('id_personal_trainer') border-red-500 @enderror">
-                                    <option value="">Pilih Personal Trainer</option>
-                                    {{-- Pastikan $personalTrainers dikirim dari controller --}}
-                                    @foreach ($personalTrainers as $trainer)
-                                        <option value="{{ $trainer->id_personal_trainer }}"
-                                            {{ old('id_personal_trainer', $member->id_personal_trainer) == $trainer->id_personal_trainer ? 'selected' : '' }}>
-                                            {{ $trainer->nama_personal_trainer }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('id_personal_trainer')
-                                    <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+        {{-- Paket Layanan --}}
+        <div>
+            <label for="paket_layanan" class="block text-sm font-medium text-gray-700 mb-1">Paket Layanan</label>
+            <select name="paket_layanan" id="paket_layanan"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500"
+                required>
+                <option value="">Pilih Paket Layanan</option>
+                <option value="biasa" {{ old('paket_layanan', $member->paket_layanan) == 'biasa' ? 'selected' : '' }}>Biasa</option>
+                <option value="premium" {{ old('paket_layanan', $member->paket_layanan) == 'premium' ? 'selected' : '' }}>Premium</option>
+            </select>
+        </div>
 
-                            <div class="mb-4">
-                                <label for="berat_badan" class="block text-gray-700 text-sm font-bold mb-2">Berat Badan (kg):</label>
-                                <input type="number" step="0.1" name="berat_badan" id="berat_badan"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('berat_badan') border-red-500 @enderror"
-                                       value="{{ old('berat_badan', $member->berat_badan) }}" required>
-                                @error('berat_badan')
-                                    <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+        {{-- Personal Trainer --}}
+        <div id="personal_trainer_selection" class="{{ old('paket_layanan', $member->paket_layanan) == 'premium' ? '' : 'hidden' }}">
+            <label for="id_personal_trainer" class="block text-sm font-medium text-gray-700 mb-1">Personal Trainer</label>
+            <select name="id_personal_trainer" id="id_personal_trainer"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500">
+                <option value="">Pilih Personal Trainer</option>
+                @foreach ($personalTrainers as $trainer)
+                    <option value="{{ $trainer->id_personal_trainer }}"
+                        {{ old('id_personal_trainer', $member->id_personal_trainer) == $trainer->id_personal_trainer ? 'selected' : '' }}>
+                        {{ $trainer->nama_personal_trainer }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
 
-                            <div class="mb-4">
-                                <label for="tinggi_badan" class="block text-gray-700 text-sm font-bold mb-2">Tinggi Badan (cm):</label>
-                                <input type="number" step="0.1" name="tinggi_badan" id="tinggi_badan"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('tinggi_badan') border-red-500 @enderror"
-                                       value="{{ old('tinggi_badan', $member->tinggi_badan) }}" required>
-                                @error('tinggi_badan')
-                                    <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+        {{-- Berat --}}
+        <div>
+            <label for="berat_badan" class="block text-sm font-medium text-gray-700 mb-1">Berat (kg)</label>
+            <input type="number" step="0.1" name="berat_badan" id="berat_badan"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500"
+                value="{{ old('berat_badan', $member->berat_badan) }}" required>
+        </div>
 
-                            <div class="mb-4">
-                                <label for="status" class="block text-gray-700 text-sm font-bold mb-2">Status Akun:</label>
-                                <select name="status" id="status"
-                                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('status') border-red-500 @enderror"
-                                        required>
-                                    <option value="Aktif" {{ old('status', $member->status) == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                                    <option value="Tidak Aktif" {{ old('status', $member->status) == 'Tidak Aktif' ? 'selected' : '' }}>Tidak Aktif</option>
-                                    <option value="Beku" {{ old('status', $member->status) == 'Beku' ? 'selected' : '' }}>Beku</option>
-                                </select>
-                                @error('status')
-                                    <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+        {{-- Tinggi --}}
+        <div>
+            <label for="tinggi_badan" class="block text-sm font-medium text-gray-700 mb-1">Tinggi (cm)</label>
+            <input type="number" step="0.1" name="tinggi_badan" id="tinggi_badan"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500"
+                value="{{ old('tinggi_badan', $member->tinggi_badan) }}" required>
+        </div>
 
-                            <div class="mb-6">
-                                <label class="block text-gray-700 text-sm font-bold mb-2">Tanggal Bergabung:</label>
-                                <p class="py-2 px-3 text-gray-700 bg-gray-100 rounded">{{ \Carbon\Carbon::parse($member->tanggal_bergabung)->translatedFormat('d F Y') }}</p>
-                            </div>
-                        </div>
-                    </div>
+        {{-- Status --}}
+        <div>
+            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status Akun</label>
+            <select name="status" id="status"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500"
+                required>
+                <option value="Aktif" {{ old('status', $member->status) == 'Aktif' ? 'selected' : '' }}>Aktif</option>
+                <option value="Tidak Aktif" {{ old('status', $member->status) == 'Tidak Aktif' ? 'selected' : '' }}>Tidak Aktif</option>
+                <option value="Beku" {{ old('status', $member->status) == 'Beku' ? 'selected' : '' }}>Beku</option>
+            </select>
+        </div>
 
-                    <div class="flex items-center justify-end gap-3 mt-6 border-t pt-6">
-                        <a href="{{ route('cs.dashboard', ['tab' => 'memberList']) }}" class="inline-block align-baseline font-bold text-sm text-gray-500 hover:text-gray-800">
-                            Batal
-                        </a>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Perbarui Member
-                        </button>
-                    </div>
-                </form>
+        {{-- Tanggal Bergabung --}}
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Bergabung</label>
+            <p class="text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-md">
+                {{ \Carbon\Carbon::parse($member->tanggal_bergabung)->translatedFormat('d F Y') }}
+            </p>
+        </div>
+    </div>
+
+    {{-- Tombol --}}
+    <div class="flex justify-end gap-3 mt-10">
+        <a href="{{ route('cs.dashboard', ['tab' => 'memberList']) }}"
+           class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-200 hover:bg-gray-300 rounded-md">
+            Batal
+        </a>
+        <button type="submit"
+            class="inline-flex items-center px-6 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-md shadow hover:bg-indigo-700 transition duration-200">
+            Simpan Perubahan
+        </button>
+    </div>
+</form>
+
             </div>
         </div>
     </div>

@@ -46,12 +46,6 @@
                         List Member
                     </a>
                     {{-- Sidebar Item: Catat Kegiatan Latihan --}}
-                    <a href="?tab=addSession" id="showAddSession"
-                       class="sidebar-item block py-3 px-4 rounded hover:bg-gray-700 mt-2"
-                       data-target="addSession">
-                        <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        Catat Kegiatan Latihan
-                    </a>
                 </div>
             </div>
             <form action="{{ route('logout') }}" method="POST" class="w-full">
@@ -134,20 +128,28 @@
                                 <tbody class="text-gray-600 text-sm font-light">
                                     @foreach($pelanggan as $index => $member)
                                         <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                            <td class="py-3 px-6 text-left whitespace-nowrap">{{ $index + 1 }}</td>
-                                            <td class="py-3 px-6 text-left">{{ $member->nama_pelanggan }}</td>
-                                            <td class="py-3 px-6 text-left">{{ $member->user->username ?? 'N/A' }}</td>
-                                            <td class="py-3 px-6 text-left">{{ ucfirst($member->paket_layanan) }}</td>
+                                            <td class="py-3 px-6 text-left whitespace-nowrap font-semibold">{{ $index + 1 }}</td>
+                                            <td class="py-3 px-6 text-left font-semibold">{{ $member->nama_pelanggan }}</td>
+                                            <td class="py-3 px-6 text-left font-semibold">{{ $member->user->username ?? 'N/A' }}</td>
+                                            <td class="py-3 px-6 text-left font-semibold">{{ ucfirst($member->paket_layanan) }}</td>
                                             <td class="py-3 px-6 text-left">
                                                 <span class="relative inline-block px-3 py-1 font-semibold leading-tight">
                                                     <span aria-hidden class="absolute inset-0 {{ $member->status == 'Aktif' ? 'bg-green-200' : ($member->status == 'Tidak Aktif' ? 'bg-red-200' : 'bg-yellow-200') }} opacity-50 rounded-full"></span>
                                                     <span class="relative text-xs {{ $member->status == 'Aktif' ? 'text-green-900' : ($member->status == 'Tidak Aktif' ? 'text-red-900' : 'text-yellow-900') }}">{{ $member->status }}</span>
                                                 </span>
                                             </td>
-                                            <td class="py-3 px-6 text-center">
-                                                <a href="{{ route('trainer.show_jadwal', $member->id_pelanggan) }}" class="text-blue-600 hover:underline text-xs mr-2">Lihat Jadwal</a>
-                                                <a href="?tab=addSession&member_id={{ $member->id_pelanggan }}" class="text-purple-600 hover:underline text-xs">Catat kegiatan</a>
-                                            </td>               
+                                           <td class="py-3 px-6 text-center space-x-2">
+    <a href="{{ route('trainer.show_jadwal', $member->id_pelanggan) }}"
+       class="inline-block bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 px-3 rounded-lg transition duration-200 shadow-sm">
+        Lihat Jadwal
+    </a>
+
+    <a href="?tab=addSession&member_id={{ $member->id_pelanggan }}"
+       class="inline-block bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold py-2 px-3 rounded-lg transition duration-200 shadow-sm">
+        Catat Kegiatan
+    </a>
+</td>
+
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -156,7 +158,7 @@
                     @endif
                 </div>
 
-                
+
 
 
             </div>

@@ -165,13 +165,17 @@
                                 <tbody class="text-gray-600 text-sm font-light">
                                     @foreach($pelanggan->kartu as $kartu)
                                         <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                            <td class="py-3 px-6 text-left whitespace-nowrap">{{ $kartu->tanggal_latihan->format('d M Y') }}</td>
-                                            <td class="py-3 px-6 text-left">{{ $kartu->kegiatan_latihan }}</td>
-                                            <td class="py-3 px-6 text-left">{{ $kartu->catatan_latihan ?? '-' }}</td>
-                                            <td class="py-3 px-6 text-left">{{ $kartu->personalTrainer->nama_personal_trainer ?? 'N/A' }}</td>
-                                            <td>
-                                                <a href="{{ route('pelanggan.jadwal.show', $kartu->id_kartu) }}">liaht detail</a>
-                                            </td>
+                                            <td class="py-3 px-6 text-left whitespace-nowrap font-semibold">{{ $kartu->tanggal_latihan->format('d M Y') }}</td>
+                                            <td class="py-3 px-6 text-left font-semibold">{{ $kartu->kegiatan_latihan }}</td>
+                                            <td class="py-3 px-6 text-left font-semibold">{{ $kartu->catatan_latihan ?? '-' }}</td>
+                                            <td class="py-3 px-6 text-left font-semibold">{{ $kartu->personalTrainer->nama_personal_trainer ?? 'N/A' }}</td>
+
+                                            <td class="py-3 px-6 text-center">
+    <a href="{{ route('pelanggan.jadwal.show', $kartu->id_kartu) }}"
+       class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 px-4 rounded-lg shadow transition duration-200">
+        Lihat Detail
+    </a>
+</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -210,16 +214,16 @@
                                 </thead>
                                 <tbody class="text-gray-600 text-sm font-light">
                                     @foreach($pelanggan->catatan as $catatan)
-                                        <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                            <td class="py-3 px-6 text-left whitespace-nowrap">{{ $catatan->tanggal_latihan->format('d M Y') }}</td>
-                                            <td class="py-3 px-6 text-left">{{ $catatan->kegiatan_latihan }}</td>
-                                            <td class="py-3 px-6 text-left">{{ $catatan->catatan_latihan }}</td>
+                                        <tr class="border-b border-gray-300 hover:bg-gray-100">
+                                            <td class="py-3 px-6 text-left whitespace-nowrap font-semibold">{{ $catatan->tanggal_latihan->format('d M Y') }}</td>
+                                            <td class="py-3 px-6 text-left font-semibold">{{ $catatan->kegiatan_latihan }}</td>
+                                            <td class="py-3 px-6 text-left font-semibold">{{ $catatan->catatan_latihan }}</td>
                                             <td class="py-3 px-6 text-center">
-                                                <a href="{{ route('pelanggan.catatan.edit', $catatan->id_catatan) }}" class="text-yellow-600 hover:underline text-xs mr-2">Edit</a>
+                                                <a href="{{ route('pelanggan.catatan.edit', $catatan->id_catatan) }}" class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 text-xs transition font-semibold transition duration-200 hover:scale-105">Edit</a>
                                                 <form action="{{ route('pelanggan.catatan.destroy', $catatan->id_catatan) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan ini?');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:underline text-xs">Hapus</button>
+                                                    <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs transition font-semibold">Hapus</button>
                                                 </form>
                                             </td>
                                         </tr>
