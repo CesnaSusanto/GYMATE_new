@@ -3,57 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Catatan Latihan</title>
+    <title>GYMATE - Edit Catatan Latihan</title>
+    {{-- Menggunakan Tailwind CSS dari CDN dengan konfigurasi custom color --}}
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'gym-red': '#E53E3E', // Menambahkan warna custom 'gym-red'
+                    }
+                }
+            }
         }
-    </style>
+    </script>
+    {{-- Font Inter sudah diatur melalui Tailwind CDN di atas --}}
 </head>
-<body class="flex items-center justify-center min-h-screen">
-    <div class="bg-white p-8 rounded-lg shadow-xl max-w-lg w-full mx-4">
-        <h1 class="text-3xl font-bold mb-6 text-gray-800">Edit Catatan Latihan</h1>
+<body class="bg-gray-300 font-sans h-screen flex flex-col">
 
-        @if ($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <strong class="font-bold">Oops!</strong>
-                <ul class="mt-2 list-disc list-inside">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+    {{-- Header GYMATE --}}
+    <div class="bg-gym-red text-white text-center flex justify-center w-full py-4">
+        <h1 class="text-2xl font-bold tracking-wider">GYMATE</h1>
+    </div>
 
-        <form action="{{ route('pelanggan.catatan.update', $catatan->id_catatan) }}" method="POST">
-            @csrf
-            @method('PUT') {{-- Penting untuk metode PUT --}}
+    <div class="flex flex-1 w-full p-8 items-center justify-center overflow-y-auto">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-2xl w-full"> {{-- Menyesuaikan max-w agar tidak terlalu lebar --}}
+            <h1 class="text-2xl font-semibold uppercase border-b border-gray-200 pb-4 text-center text-gray-900">Edit Catatan Latihan</h1>
 
-            <div class="mb-4">
-                <label for="tanggal_latihan" class="block text-sm font-medium text-gray-700">Tanggal Latihan:</label>
-                <input type="date" name="tanggal_latihan" id="tanggal_latihan" value="{{ old('tanggal_latihan', $catatan->tanggal_latihan->format('Y-m-d')) }}" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
-            </div>
-            <div class="mb-4">
-                <label for="kegiatan_latihan" class="block text-sm font-medium text-gray-700">Kegiatan Latihan:</label>
-                <input type="text" name="kegiatan_latihan" id="kegiatan_latihan" value="{{ old('kegiatan_latihan', $catatan->kegiatan_latihan) }}" placeholder="Contoh: Latihan Dada & Trisep" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
-            </div>
-            <div class="mb-6">
-                <label for="catatan_latihan" class="block text-sm font-medium text-gray-700">Catatan:</label>
-                <textarea name="catatan_latihan" id="catatan_latihan" rows="3" placeholder="Catatan detail tentang latihan (opsional)" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ old('catatan_latihan', $catatan->catatan_latihan) }}</textarea>
-            </div>
+            @if ($errors->any())
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
+                    <strong class="font-bold">Oops!</strong>
+                    <span class="block sm:inline">Ada beberapa masalah dengan input Anda:</span>
+                    <ul class="mt-3 list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-            <div class="flex justify-end gap-3">
-                <a href="{{ route('pelanggan.dashboard', ['tab' => 'myNotes']) }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-md shadow transition duration-300 ease-in-out">
-                    Batal
-                </a>
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow transition duration-300 ease-in-out">
-                    Perbarui Catatan
-                </button>
-            </div>
-        </form>
+            <form action="{{ route('pelanggan.catatan.update', $catatan->id_catatan) }}" method="POST" class="space-y-6">
+                @csrf
+                @method('PUT') {{-- Penting untuk metode PUT --}}
+
+                <div class="mb-4">
+                    <label for="tanggal_latihan" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Latihan:</label>
+                    <input type="date" name="tanggal_latihan" id="tanggal_latihan"
+                           class="w-full px-4 py-3 bg-gray-100 border-0 rounded-lg focus:ring-2 focus:ring-gym-red focus:bg-white transition-colors @error('tanggal_latihan') ring-2 ring-red-500 @enderror"
+                           value="{{ old('tanggal_latihan', $catatan->tanggal_latihan->format('Y-m-d')) }}" required>
+                    @error('tanggal_latihan')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="mb-4">
+                    <label for="kegiatan_latihan" class="block text-sm font-medium text-gray-700 mb-2">Kegiatan Latihan:</label>
+                    <textarea type="text" name="kegiatan_latihan" id="kegiatan_latihan"
+                           class="w-full px-4 py-3 bg-gray-100 border-0 rounded-lg focus:ring-2 focus:ring-gym-red focus:bg-white transition-colors @error('kegiatan_latihan') ring-2 ring-red-500 @enderror"
+                           value="" placeholder="Contoh: Latihan Dada & Trisep" required rows="5">{{ old('kegiatan_latihan', $catatan->kegiatan_latihan) }}</textarea>
+                    @error('kegiatan_latihan')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="mb-6">
+                    <label for="catatan_latihan" class="block text-sm font-medium text-gray-700 mb-2">Catatan (Opsional):</label>
+                    <textarea name="catatan_latihan" id="catatan_latihan" rows="5"
+                              class="resize-y w-full px-4 py-3 bg-gray-100 border-0 rounded-lg focus:ring-2 focus:ring-gym-red focus:bg-white transition-colors @error('catatan_latihan') ring-2 ring-red-500 @enderror"
+                              placeholder="Catatan detail tentang latihan (opsional)">{{ old('catatan_latihan', $catatan->catatan_latihan) }}</textarea>
+                    @error('catatan_latihan')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+                    <a href="{{ route('pelanggan.dashboard', ['tab' => 'myNotes']) }}"
+                       class="px-6 py-3 bg-gray-500 text-white rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+                        Batal
+                    </a>
+                    <button type="submit"
+                            class="px-6 py-3 bg-gym-red text-white rounded-lg font-semibold hover:bg-red-600 transition-colors focus:ring-2 focus:ring-gym-red focus:ring-offset-2">
+                        Perbarui Catatan
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 </html>
