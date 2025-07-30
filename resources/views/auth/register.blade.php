@@ -149,6 +149,15 @@
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                    <div>
+                        <label for="kode_bayar" class="block text-sm font-medium text-gray-700 mb-2">Kode Bayar</label>
+                        <input type="text" name="kode_bayar" id="kode_bayar" 
+                            class="w-full px-4 py-3 bg-gray-100 border-0 rounded-lg focus:ring-2 focus:ring-gym-red focus:bg-white transition-colors @error('kode_bayar') ring-2 ring-red-500 @enderror" 
+                            value="{{ old('kode_bayar') }}" step="0.1" min="1" required width="10">
+                        @error('kode_bayar')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
             </div>
 

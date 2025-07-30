@@ -226,7 +226,7 @@
 
                         <!-- Tabel untuk Menampilkan Catatan -->
                         @if(isset($pelanggan->catatan) && $pelanggan->catatan->isNotEmpty())
-                        <div class="border-gray-200 shadow-sm flex flex-col overflow-auto max-h-full">
+                        <div class="border-gray-200 w-full shadow-sm flex flex-col overflow-auto max-h-full">
                                 <table class="w-full bg-white border-2 ">
                                     <thead class="bg-gray-50 ">
                                         <tr class="text-gray-700 text-sm font-semibold">
