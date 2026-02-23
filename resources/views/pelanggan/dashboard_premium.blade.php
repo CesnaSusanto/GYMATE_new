@@ -10,48 +10,49 @@
             <p>Nama: {{ $pelanggan->nama_pelanggan }}</p>
             <p>Username: {{ $pelanggan->user->username }}</p>
             <p>Paket Layanan: {{ $pelanggan->paket_layanan }}</p>
-            {{-- Tampilkan info akun lainnya --}}
         </div>
-
-        {{-- Bagian untuk Membuat Catatan Latihan (sama seperti biasa) --}}
         <div class="bg-white shadow-md rounded-lg p-6 mb-6">
             <h2 class="text-xl font-semibold mb-3">Catatan Latihan Anda</h2>
-            {{-- Form untuk membuat catatan baru --}}
             <form action="{{ route('pelanggan.catatan.store') }}" method="POST">
                 @csrf
-                {{-- Input form untuk kegiatan_latihan, catatan_latihan, dll --}}
                 <button type="submit" class="bg-blue-500 text-white p-2 rounded">Simpan Catatan</button>
             </form>
 
-            {{-- Daftar catatan latihan --}}
+            <!-- Daftar catatan latihan -->
             <h3 class="text-lg font-semibold mt-4 mb-2">Daftar Catatan Anda</h3>
             @forelse($catatanLatihan as $catatan)
                 <div class="border-b py-2">
                     <p><strong>Tanggal:</strong> {{ $catatan->tanggal_latihan }}</p>
                     <p><strong>Kegiatan:</strong> {{ $catatan->kegiatan_latihan }}</p>
                     <p><strong>Catatan:</strong> {{ $catatan->catatan_latihan }}</p>
-                    {{-- Tambahkan tombol edit/hapus catatan --}}
                 </div>
             @empty
                 <p>Belum ada catatan latihan.</p>
             @endforelse
         </div>
 
-        {{-- === Tambahan untuk Pelanggan Premium: Catatan dari Personal Trainer === --}}
+        <!-- Jadwal Latihan dengan Personal Trainer-->
         <div class="bg-white shadow-md rounded-lg p-6">
             <h2 class="text-xl font-semibold mb-3">Histori Latihan dengan Personal Trainer</h2>
-            @forelse($historiLatihan as $histori)
-                <div class="border-b py-2">
-                    <p><strong>Tanggal:</strong> {{ $histori->tanggal_latihan }}</p>
-                    <p><strong>Kegiatan:</strong> {{ $histori->kegiatan_latihan }}</p>
-                    <p><strong>Catatan PT:</strong> {{ $histori->catatan_latihan }}</p>
-                    @if($histori->personalTrainer)
-                        <p><strong>Personal Trainer:</strong> {{ $histori->personalTrainer->nama_personal_trainer }}</p>
-                    @endif
-                </div>
-            @empty
-                <p>Belum ada histori latihan dengan Personal Trainer.</p>
-            @endforelse
+            
+            <div class="flex flex-col gap-2">
+                @forelse($historiLatihan as $histori)
+                    <div class="border-b border-gray-200 py-3">
+                        <p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($histori->tanggal_latihan)->format('d/m/Y') }}</p>
+                        <p><strong>Kegiatan:</strong> {{ $histori->kegiatan_latihan }}</p>
+                        <p><strong>Catatan PT:</strong> {{ $histori->catatan_latihan }}</p>
+                        @if($histori->personalTrainer)
+                            <p><strong>Personal Trainer:</strong> {{ $histori->personalTrainer->nama_personal_trainer }}</p>
+                        @endif
+                    </div>
+                @empty
+                    <p class="text-gray-500 italic py-4">Belum ada histori latihan dengan Personal Trainer.</p>
+                @endforelse
+            </div>
+
+            <div class="mt-6 w-full">
+                {{ $historiLatihan->links() }}
+            </div>
         </div>
     </div>
 @endsection

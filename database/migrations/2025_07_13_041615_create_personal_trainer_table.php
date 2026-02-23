@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('nama_personal_trainer', 255); // Panjang 255 untuk nama
             $table->string('jenis_kelamin', 20)->nullable(); // Panjang 20 untuk jenis kelamin (misal: "Laki-laki")
             $table->string('no_telp', 20)->nullable(); // Panjang 20 untuk nomor telepon (cukup untuk format internasional)
+            $table->string('foto_trainer')->nullable();
             $table->timestamps();
 
             // $table->unique('user_id'); // Tetap dipertahankan untuk relasi 1:1 user-to-trainer

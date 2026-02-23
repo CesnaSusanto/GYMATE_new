@@ -59,11 +59,137 @@ class DatabaseSeeder extends Seeder
 
 
         // --- 3. Seed Personal Trainers ---
-        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ // <--- Sesuaikan
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
             'user_id' => $userPTId,
-            'nama_personal_trainer' => 'Budi Otot',
+            'nama_personal_trainer' => 'Agus Santoso',
             'jenis_kelamin' => 'Laki-laki',
-            'no_telp' => '081234567890',
+            'no_telp' => '081234567001',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Bambang Pamungkas',
+            'jenis_kelamin' => 'Laki-laki',
+            'no_telp' => '081234567002',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Citra Lestari',
+            'jenis_kelamin' => 'Perempuan',
+            'no_telp' => '081234567003',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Dedi Wijaya',
+            'jenis_kelamin' => 'Laki-laki',
+            'no_telp' => '081234567004',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Eka Putri',
+            'jenis_kelamin' => 'Perempuan',
+            'no_telp' => '081234567005',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Fajar Nugraha',
+            'jenis_kelamin' => 'Laki-laki',
+            'no_telp' => '081234567006',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Gita Kirana',
+            'jenis_kelamin' => 'Perempuan',
+            'no_telp' => '081234567007',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Hendra Setiawan',
+            'jenis_kelamin' => 'Laki-laki',
+            'no_telp' => '081234567008',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Intan Permata',
+            'jenis_kelamin' => 'Perempuan',
+            'no_telp' => '081234567009',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Joko Anwar',
+            'jenis_kelamin' => 'Laki-laki',
+            'no_telp' => '081234567010',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Kevin Sanjaya',
+            'jenis_kelamin' => 'Laki-laki',
+            'no_telp' => '081234567011',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Lesti Anggraini',
+            'jenis_kelamin' => 'Perempuan',
+            'no_telp' => '081234567012',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Muhammad Fatih',
+            'jenis_kelamin' => 'Laki-laki',
+            'no_telp' => '081234567013',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Nadia Saphira',
+            'jenis_kelamin' => 'Perempuan',
+            'no_telp' => '081234567014',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personalTrainerId = DB::table('personal_trainer')->insertGetId([ 
+            'user_id' => $userPTId,
+            'nama_personal_trainer' => 'Oka Antara',
+            'jenis_kelamin' => 'Laki-laki',
+            'no_telp' => '081234567015',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

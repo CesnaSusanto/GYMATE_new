@@ -27,6 +27,7 @@ class PersonalTrainer extends Model
         'nama_personal_trainer',
         'jenis_kelamin',
         'no_telp',
+        'foto_trainer',
     ];
 
     // Hubungan One-to-One (Inverse) dengan User

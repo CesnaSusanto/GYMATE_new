@@ -16,16 +16,36 @@
             }
         }
     </script>
+    <style>
+    /* 1. Paksa background putih dan teks gelap untuk semua kotak paginasi (termasuk ikon panah) */
+    nav[role="navigation"] a, 
+    nav[role="navigation"] span[aria-disabled="true"] > span {
+        background-color: #ffffff !important;
+        color: #4b5563 !important; /* Warna teks abu-abu agar kontras dan mudah dibaca */
+        border-color: #d1d5db !important;
+    }
+
+    /* 2. Warna untuk tombol halaman yang SEDANG AKTIF (misal sedang di halaman 1) */
+    nav[role="navigation"] span[aria-current="page"] > span {
+        background-color: #E53E3E !important; /* Warna merah gym-red */
+        color: #ffffff !important; /* Teks putih */
+        border-color: #E53E3E !important;
+    }
+
+    /* 3. Efek warna saat tombol ditunjuk oleh mouse (Hover) */
+    nav[role="navigation"] a:hover {
+        background-color: #f3f4f6 !important; /* Abu-abu sangat terang */
+        color: #E53E3E !important; /* Teks berubah menjadi merah */
+    }
+</style>
 </head>
 <body class="bg-gray-300 font-sans">
     <div class="flex flex-col h-screen">
-        <!-- Header -->
         <div class="bg-gym-red text-white text-center py-4">
             <h1 class="text-2xl font-bold tracking-wider">GYMATE</h1>
         </div>
         
         <div class="flex flex-row h-full ">
-            <!-- Sidebar -->
             <div class="w-64 bg-white flex flex-col">
                 <div class="flex-1">
                     <a href="{{ route('trainer.dashboard') }}?tab=accountInfo" id="showAccountInfo"
@@ -53,10 +73,8 @@
                 </form>
             </div>
 
-            <!-- Main Content -->
             <div class="flex flex-col w-full h-full bg-gray-300 overflow-y-auto p-8">
                 <div class="bg-white p-8 rounded-2xl shadow-xl flex flex-col gap-6 h-full">
-                    <!-- Header Section -->
                     <div class="flex flex-col gap-6 items-center justify-between">
                         <h1 class="text-2xl uppercase font-semibold text-gray-900">Jadwal Latihan {{ $pelanggan->nama_pelanggan }}</h1>
                         <div class="flex flex-row gap-4 w-full">
@@ -73,7 +91,6 @@
                         </div>
                     </div>
 
-                    <!-- Success/Error Messages -->
                     @if(session('success'))
                         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
                             <span class="block sm:inline">{{ session('success') }}</span>
@@ -85,7 +102,6 @@
                         </div>
                     @endif
 
-                    <!-- Content Section -->
                     @if($jadwalLatihan->isEmpty())
                         <div class="text-center py-16">
                             <div class="bg-gray-50 p-12 rounded-lg border border-gray-200">
@@ -97,7 +113,7 @@
                             </div>
                         </div>
                     @else
-                        <div class="flex flex-col gap-4h-full overflow-auto">
+                        <div class="flex flex-col gap-4 h-full justify-between overflow-auto">
                             <div class="flex flex-col gap-4 overflow-auto max-h-full">
                                 @foreach($jadwalLatihan as $index => $kartu)
                                 <a href="{{ route('trainer.jadwal.edit', $kartu->id_kartu) }}" class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
@@ -109,12 +125,9 @@
                                                     <p class="text-sm font-medium text-gray-500">Tanggal Latihan : {{ \Carbon\Carbon::parse($kartu->tanggal_latihan)->format('d/m/Y') }}</p>
                                                 </div>
                                             </div>
-                                            
-
                                         </div>
                                         
                                         <div class="flex items-center space-x-3 ml-6">
-                                            <!-- Delete Button -->
                                             <form action="{{ route('trainer.jadwal.destroy', $kartu->id_kartu) }}" method="POST" 
                                                   onsubmit="return confirm('Apakah Anda yakin ingin menghapus sesi latihan ini?');" class="inline">
                                                 @csrf
@@ -130,9 +143,13 @@
                                         </div>
                                     </div>
                                 </a>
-
-                            @endforeach
+                                @endforeach
                             </div>
+
+                            <div class="w-full">
+                                {{ $jadwalLatihan->links() }}
+                            </div>
+
                         </div>
                     @endif
                 </div>

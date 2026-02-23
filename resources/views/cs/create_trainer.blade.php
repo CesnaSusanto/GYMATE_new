@@ -49,7 +49,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('cs.trainer.store') }}" method="POST" class="space-y-6">
+                    <form action="{{ route('cs.trainer.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -120,7 +120,17 @@
                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                     @enderror
                                 </div>
+                                <div class="md:col-span-2 mb-6">
+                                    <label for="foto_trainer" class="block text-sm font-medium text-gray-700 mb-2">Foto Profile Trainer (Opsional):</label>
+                                    <input type="file" name="foto_trainer" id="foto_trainer" accept="image/*"
+                                        class="w-full px-4 py-3 bg-gray-100 border-0 rounded-lg focus:ring-2 focus:ring-gym-red focus:bg-white transition-colors @error('foto_trainer') ring-2 ring-red-500 @enderror">
+                                    @error('foto_trainer')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                    <p class="text-xs text-gray-500 mt-2">Format yang didukung: JPG, JPEG, PNG. Maksimal 2MB.</p>
+                                </div>
                             </div>
+                            
                         </div>
 
                         <div class="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">

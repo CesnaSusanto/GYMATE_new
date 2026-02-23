@@ -70,12 +70,45 @@
                     </div>
                 @endif
 
-                <form action="{{ route('cs.trainer.update', $trainer->id_personal_trainer) }}" method="POST" class="space-y-6">
-                    @csrf
+                <form action="{{ route('cs.trainer.update', $trainer->id_personal_trainer) }}" method="POST" enctype="multipart/form-data" class="space-y-6">                    @csrf
                     @method('PUT')
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {{-- Data User --}}
+                        <div class="md:col-span-2 mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                            <h3 class="text-sm font-medium text-gray-700 mb-4">Pengaturan Foto Profil</h3>
+                            
+                            <div class="flex flex-col sm:flex-row gap-6 items-start">
+                                <div class="flex-shrink-0">
+                                    <p class="text-xs text-gray-500 mb-2">Foto Saat Ini:</p>
+                                    @if($trainer->foto_trainer)
+                                        <img src="{{ asset($trainer->foto_trainer) }}" alt="Foto {{ $trainer->nama_personal_trainer }}" 
+                                            class="w-32 h-32 object-cover rounded-lg border-2 border-gym-red shadow-sm">
+                                    @else
+                                        <div class="w-32 h-32 rounded-lg bg-gray-200 flex items-center justify-center border-2 border-gray-300">
+                                            <span class="text-gray-400 text-xs text-center px-2">Belum ada foto</span>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <div class="flex-grow w-full">
+                                    <label for="foto_trainer" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Upload Foto Baru <span class="text-gray-500 font-normal">(Opsional - Biarkan kosong jika tidak ingin mengubah foto)</span>
+                                    </label>
+                                    <input type="file" name="foto_trainer" id="foto_trainer" accept="image/*"
+                                        class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-gym-red focus:border-transparent transition-colors @error('foto_trainer') ring-2 ring-red-500 @enderror">
+                                    
+                                    @error('foto_trainer')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                    
+                                    <p class="text-xs text-gray-500 mt-2">
+                                        Format yang didukung: JPG, JPEG, PNG. Maksimal 2MB. <br>
+                                        <span class="text-gym-red">* Mengupload foto baru akan otomatis menghapus foto lama.</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                         <div>
                             <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Informasi Akun Login</h2>
                             <div class="mb-4">

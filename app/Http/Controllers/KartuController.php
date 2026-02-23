@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class KartuController extends Controller
 {
-    public function showJadwal(Pelanggan $pelanggan) // Menggunakan route model binding
+    public function showJadwal(Pelanggan $pelanggan) 
     {
         $personalTrainer = Auth::user()->personalTrainer;
 
@@ -18,14 +18,15 @@ class KartuController extends Controller
             abort(403, 'ANDA TIDAK BERHAK MELIHAT DETAIL PELANGGAN INI.');
         }
 
-        // Ambil semua catatan latihan untuk pelanggan ini, diurutkan berdasarkan tanggal terbaru
+        // PASTIKAN BARIS INI MENGGUNAKAN paginate(), BUKAN get()
         $jadwalLatihan = Kartu::where('id_pelanggan', $pelanggan->id_pelanggan)
                                 ->orderBy('tanggal_latihan', 'desc')
-                                ->get();
+                                ->paginate(10); // <--- INI KUNCI UTAMANYA
 
-        // Pastikan nama view ini sesuai dengan lokasi file Blade Anda
         return view('trainer.list_jadwal', compact('pelanggan', 'jadwalLatihan'));
     }
+
+    
     
      public function createJadwal(Request $request, Pelanggan $pelanggan = null)
     {

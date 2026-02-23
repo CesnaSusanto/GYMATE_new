@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage; // <-- TAMBAHAN UNTUK UPLOAD FOTO
+use Illuminate\Support\Facades\DB;      // <-- TAMBAHAN UNTUK DATABASE TRANSACTION
 
 class CustomerServiceController extends Controller
 {
@@ -20,9 +22,9 @@ class CustomerServiceController extends Controller
     }
 
     // SHOW MEMBER AND TRAINER
+    // SHOW MEMBER AND TRAINER
     public function showManagementLists(Request $request)
     {
-
         $memberSearch = $request->input('member_search');
         $trainerSearch = $request->input('trainer_search');
 
@@ -32,7 +34,6 @@ class CustomerServiceController extends Controller
         }
 
         // --- Logic untuk Pelanggan ---
-
         $membersQuery = Pelanggan::query();
         $membersQuery->whereHas('user', function ($query) {
             $query->where('role', 'pelanggan');
@@ -46,12 +47,10 @@ class CustomerServiceController extends Controller
                 });
             });
         }
-
-        $members = $membersQuery->get();
+                $members = $membersQuery->paginate(10, ['*'], 'members_page');
 
         // --- Logic untuk Personal Trainers ---
         $trainersQuery = PersonalTrainer::query();
-
         $trainersQuery->whereHas('user', function ($query) {
             $query->where('role', 'personal_trainer');
         });
@@ -64,9 +63,10 @@ class CustomerServiceController extends Controller
                 });
             });
         }
-        $trainers = $trainersQuery->get();
+        
+        $trainers = $trainersQuery->paginate(10, ['*'], 'trainers_page');
 
-        return view('cs.dashboard', compact('members', 'trainers', 'memberSearch', 'trainerSearch')); // Pastikan nama view ini 'cs.management'
+        return view('cs.dashboard', compact('members', 'trainers', 'memberSearch', 'trainerSearch'));
     }
 
 
@@ -95,15 +95,6 @@ class CustomerServiceController extends Controller
         return view('cs.edit_member', compact('member','personalTrainers'));
     }
 
-    /**
-     * Memperbarui data member (pelanggan) di database.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id ID pelanggan
-     * @return \Illuminate\Http\RedirectResponse
-     */
-
-    
     //  UPDATE MEMBER
     public function updateMember(Request $request, $id)
     {
@@ -136,7 +127,6 @@ class CustomerServiceController extends Controller
             'berat_badan' => 'nullable|numeric|min:1',
             'tinggi_badan' => 'nullable|numeric|min:1',
             'status' => 'required|in:Aktif,Tidak Aktif,Beku', // Sesuaikan dengan opsi status yang Anda miliki
-            // 'password' => 'nullable|string|min:8|confirmed', // Jika ingin memungkinkan perubahan password
         ]);
 
         if ($member->user) {
@@ -205,14 +195,6 @@ class CustomerServiceController extends Controller
         return view('cs.edit_trainer', compact('trainer'));
     }
 
-    /**
-     * Memperbarui data personal trainer di database.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id ID personal trainer
-     * @return \Illuminate\Http\RedirectResponse
-     */
-
     
     // CREATE TRAINER
     public function createTrainer()
@@ -239,7 +221,7 @@ class CustomerServiceController extends Controller
             return redirect()->route('cs.dashboard')->with('error', 'Personal Trainer tidak ditemukan.');
         }
 
-        // Validasi data input
+        // Validasi data input TERMASUK FOTO
         $request->validate([
             'nama_personal_trainer' => 'required|string|max:255',
             'username' => [
@@ -250,7 +232,8 @@ class CustomerServiceController extends Controller
                 Rule::unique('users')->ignore($trainer->user->user_id, 'user_id'),
             ],
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-            'no_telp' => 'nullable|string|max:20',
+            'no_telp'       => 'nullable|string|max:20',
+            'foto_trainer'  => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // <-- TAMBAHAN VALIDASI FOTO
         ]);
 
         if ($trainer->user) {
@@ -261,9 +244,32 @@ class CustomerServiceController extends Controller
         $trainer->nama_personal_trainer = $request->nama_personal_trainer;
         $trainer->jenis_kelamin = $request->jenis_kelamin;
         $trainer->no_telp = $request->no_telp;
+
+        // --- LOGIKA UPDATE FOTO ---
+        // --- LOGIKA UPDATE FOTO LANGSUNG DI PUBLIC ---
+        if ($request->hasFile('foto_trainer')) {
+            $file = $request->file('foto_trainer');
+
+            if ($file->isValid()) {
+                // 1. Hapus foto lama fisik jika ada
+                if ($trainer->foto_trainer && file_exists(public_path($trainer->foto_trainer))) {
+                    unlink(public_path($trainer->foto_trainer));
+                }
+
+                // 2. Upload foto baru
+                $namaFile = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('trainers'), $namaFile);
+                
+                // 3. Update database
+                $trainer->foto_trainer = 'trainers/' . $namaFile;
+            } else {
+                return back()->withInput()->withErrors(['foto_trainer' => 'File foto baru tidak valid.']);
+            }
+        }
+
         $trainer->save();
 
-        return redirect()->route('cs.dashboard')->with('success', 'Data Personal Trainer berhasil diperbarui.');
+        return redirect()->route('cs.dashboard', ['tab' => 'trainerList'])->with('success', 'Data Personal Trainer berhasil diperbarui.');
     }
 
 
@@ -271,39 +277,74 @@ class CustomerServiceController extends Controller
     public function storeTrainer(Request $request)
     {
         // Pastikan hanya customer_service yang bisa mengakses
-    if (Auth::user()->role !== 'customer_service') {
-        abort(403, 'Akses Dilarang.');
-    }
+        if (Auth::user()->role !== 'customer_service') {
+            abort(403, 'Akses Dilarang.');
+        }
 
-    // Validasi data input
-    // dd($request->all());
-    $validatedData = $request->validate([
-        'username' => ['required', 'string', 'max:255', 'unique:users'],
-        'password' => ['required', 'string', 'min:8', 'confirmed'],
-        'nama_personal_trainer' => ['required', 'string', 'max:255'],
-        'jenis_kelamin' => ['required', 'string', Rule::in(['Laki-laki', 'Perempuan'])],
-        'no_telp' => ['required', 'string', 'max:15'],
-    ]);
-    // dd($validatedData);
+        // Validasi data input TERMASUK FOTO
+        $validatedData = $request->validate([
+            'username'              => ['required', 'string', 'max:255', 'unique:users'],
+            'password'              => ['required', 'string', 'min:8', 'confirmed'],
+            'nama_personal_trainer' => ['required', 'string', 'max:255'],
+            'jenis_kelamin'         => ['required', 'string', Rule::in(['Laki-laki', 'Perempuan'])],
+            'no_telp'               => ['required', 'string', 'max:15'],
+            'foto_trainer'          => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'], // <-- TAMBAHAN VALIDASI FOTO
+        ]);
 
-    // 1. Buat user baru dengan role 'personal_trainer'
-    // DI SINI Anda menetapkan role-nya!
-    $user = User::create([
-        'username' => $validatedData['username'],
-        'password' => Hash::make($validatedData['password']),
-        'role' => 'personal_trainer', // <--- BARIS INI PENTING!
-    ]);
-    // dd($user);
+        // --- LOGIKA UPLOAD FOTO ---
+        $fotoPath = null;
+        if ($request->hasFile('foto_trainer')) {
+            $file = $request->file('foto_trainer');
 
-    // 2. Buat personal trainer baru dan hubungkan dengan user yang baru dibuat
-    PersonalTrainer::create([
-        'user_id' => $user->user_id, // Menggunakan ID dari user yang baru dibuat
-        'nama_personal_trainer' => $validatedData['nama_personal_trainer'],
-        'jenis_kelamin' => $validatedData['jenis_kelamin'],
-        'no_telp' => $validatedData['no_telp'],
-    ]);
+            if ($file->isValid()) {
+                // Buat nama file unik
+                $namaFile = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                
+                // Pindahkan file ke folder public/trainers
+                $file->move(public_path('trainers'), $namaFile);
+                
+                // Simpan path relatifnya ke database
+                $fotoPath = 'trainers/' . $namaFile;
+            } else {
+                return back()->withInput()->withErrors(['foto_trainer' => 'File foto tidak valid atau gagal diproses oleh server.']);
+            }
+        }
 
-    return redirect()->route('cs.dashboard')->with('success', 'Personal Trainer berhasil ditambahkan.');
+        // --- DATABASE TRANSACTION ---
+        // Digunakan agar jika salah satu gagal (User/Trainer), data dibatalkan semua
+        DB::beginTransaction();
+
+        try {
+            // 1. Buat user baru dengan role 'personal_trainer'
+            $user = User::create([
+                'username' => $validatedData['username'],
+                'password' => Hash::make($validatedData['password']),
+                'role'     => 'personal_trainer', 
+            ]);
+
+            // 2. Buat personal trainer baru dan hubungkan dengan user yang baru dibuat
+            PersonalTrainer::create([
+                'user_id'               => $user->user_id, // Menggunakan ID dari user yang baru dibuat
+                'nama_personal_trainer' => $validatedData['nama_personal_trainer'],
+                'jenis_kelamin'         => $validatedData['jenis_kelamin'],
+                'no_telp'               => $validatedData['no_telp'],
+                'foto_trainer'          => $fotoPath, // <-- SIMPAN PATH FOTO KE DB
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('cs.dashboard', ['tab' => 'trainerList'])->with('success', 'Personal Trainer berhasil ditambahkan.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // Hapus file yang terlanjur terupload jika database error
+            if ($fotoPath) {
+                Storage::disk('public')->delete($fotoPath);
+            }
+
+            return back()->withInput()->withErrors(['error' => 'Gagal menyimpan data: ' . $e->getMessage()]);
+        }
     }
 
 
@@ -318,18 +359,21 @@ class CustomerServiceController extends Controller
         $trainer = PersonalTrainer::find($id);
 
         if (!$trainer) {
-            return redirect()->route('cs.dashboard')->with('error', 'Personal Trainer tidak ditemukan.');
+            return redirect()->route('cs.dashboard', ['tab' => 'trainerList'])->with('error', 'Personal Trainer tidak ditemukan.');
         }
 
-        // Jika Anda memiliki onDelete('cascade') di migrasi foreign key user_id,
-        // maka menghapus trainer akan otomatis menghapus user terkait.
-        // Jika tidak, Anda perlu menghapus user secara manual seperti ini:
+        // --- LOGIKA HAPUS FOTO DARI FOLDER PUBLIC ---
+        if ($trainer->foto_trainer && file_exists(public_path($trainer->foto_trainer))) {
+            unlink(public_path($trainer->foto_trainer));
+        }
+
+        // Hapus user secara manual (jika onDelete cascade belum diset, ini mencegah error)
         if ($trainer->user) {
             $trainer->user->delete();
         }
 
-        $trainer->delete(); // Ini akan menghapus trainer dan, karena onDelete('cascade'), user terkait juga
+        $trainer->delete(); // Ini akan menghapus trainer
 
-        return redirect()->route('cs.dashboard')->with('success', 'Personal Trainer berhasil dihapus.');
+        return redirect()->route('cs.dashboard', ['tab' => 'trainerList'])->with('success', 'Personal Trainer beserta foto profil berhasil dihapus.');
     }
 }

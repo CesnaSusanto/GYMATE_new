@@ -28,17 +28,32 @@
             color: #374151;
             font-weight: 600;
         }
+
+        /* --- TAMBAHAN STYLE UNTUK PAGINATION --- */
+        nav[role="navigation"] a, 
+        nav[role="navigation"] span[aria-disabled="true"] > span {
+            background-color: #ffffff !important;
+            color: #4b5563 !important;
+            border-color: #d1d5db !important;
+        }
+        nav[role="navigation"] span[aria-current="page"] > span {
+            background-color: #E53E3E !important; /* Warna gym-red */
+            color: #ffffff !important;
+            border-color: #E53E3E !important;
+        }
+        nav[role="navigation"] a:hover {
+            background-color: #f3f4f6 !important;
+            color: #E53E3E !important;
+        }
     </style>
 </head>
 <body class="bg-gray-200 font-sans">
     <div class="flex flex-col h-screen">
-        <!-- Header -->
         <div class="bg-gym-red text-white text-center py-4">
             <h1 class="text-2xl font-bold tracking-wider">GYMATE</h1>
         </div>
         
         <div class="flex flex-1">
-            <!-- Sidebar -->
             <div class="w-56 bg-white flex flex-col">
                 <div class="flex-1">
                     <a href="?tab=memberList" id="showMembers" class="sidebar-item flex items-center px-6 py-5 gap-3 text-gray-700 hover:bg-[#CFCECE] border-b border-gray-400" data-target="memberList">
@@ -55,7 +70,6 @@
                     </a>
                 </div>
                 
-                <!-- Logout Button -->
                 <form action="{{ route('logout') }}" method="POST" class="w-full">
                     @csrf
                     <button type="submit" class="w-full bg-gym-red hover:bg-red-600 text-white py-4 px-6 text-lg font-bold flex items-center justify-center gap-2">
@@ -67,7 +81,6 @@
                 </form>
             </div>
 
-            <!-- Main Content -->
             <div class="flex-1 bg-[#EDEDED] overflow-y-auto">
                 {{-- Success/Error Messages --}}
                 @if (session('success'))
@@ -86,20 +99,22 @@
                     </div>
                 @endif
 
-                {{-- SECTION LIST MEMBER --}}
+                {{-- =============================================== --}}
+                {{-- SECTION LIST MEMBER                             --}}
+                {{-- =============================================== --}}
                 <div id="memberList" class="content-section flex-col gap-8 p-8">
                     <h1 class="text-4xl font-bold text-gray-800">List Member</h1>
                     
-                    <!-- Search Form -->
                     <form action="{{ route('cs.dashboard') }}" method="GET" class= "flex gap-4">
                         <input type="hidden" name="tab" value="memberList">
+                        <input type="hidden" name="trainers_page" value="{{ request('trainers_page') }}">
+                        
                         <input type="text" name="member_search" placeholder="CARI MEMBER"
                                class="flex-1 p-4 border-0 bg-white rounded-lg focus:ring-2 focus:ring-gray-400 text-gray-700"
                                value="{{ request('member_search') }}">
                         <button type="submit" class="px-8 py-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-semibold">CARI</button>
                     </form>
 
-                    <!-- Member List -->
                     <div class="flex flex-col flex-wrap gap-5">
                         @forelse($members as $member)
                             <div class="flex flex-row justify-between bg-white rounded-lg shadow-sm overflow-hidden">
@@ -108,24 +123,14 @@
                                     @if($member->user)
                                         <p class="text-gray-600">Username: {{ $member->user->username }}</p>
                                     @endif
-                                    <!-- <p class="text-gray-600">
-                                        Jenis Pelayanan: {{ $member->paket_layanan }}
-                                        @if($member->personalTrainer)
-
-                                        @endif
-                                    </p> -->
-                                    <!-- @if($member->personalTrainer)
-                                        <p class="text-gray-600">Personal Trainer: {{ $member->personalTrainer->nama_personal_trainer }}</p>
-                                    @endif -->
                                 </div>
-                                <div class="flex  flex-row justify-center">
+                                <div class="flex flex-row justify-center">
                                     <div class="flex justify-center items-center px-6">
-                                        <a href="{{ route('cs.members.edit', $member->id_pelanggan) }}"
-                                       class="">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
-                                    </a>
+                                        <a href="{{ route('cs.members.edit', $member->id_pelanggan) }}" class="">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </a>
                                     </div>
                                     <form action="{{ route('cs.members.destroy', $member->id_pelanggan) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus member ini?');" class="flex">
                                         @csrf
@@ -142,15 +147,22 @@
                             <p class="text-gray-600 text-center py-8">Tidak ada member yang ditemukan.</p>
                         @endforelse
                     </div>
+
+                    <div class="mt-4 w-full">
+                        {{ $members->appends(['tab' => 'memberList', 'member_search' => request('member_search'), 'trainers_page' => request('trainers_page')])->links() }}
+                    </div>
                 </div>
 
-                {{-- SECTION LIST PERSONAL TRAINER --}}
+                {{-- =============================================== --}}
+                {{-- SECTION LIST PERSONAL TRAINER                   --}}
+                {{-- =============================================== --}}
                 <div id="trainerList" class="content-section flex-col gap-8 p-8">
                     <h1 class="text-4xl font-bold text-gray-800">List Personal Trainer</h1>
                     
-                    <!-- Search Form -->
                     <form action="{{ route('cs.dashboard') }}" method="GET" class= "flex gap-4">
                         <input type="hidden" name="tab" value="trainerList">
+                        <input type="hidden" name="members_page" value="{{ request('members_page') }}">
+                        
                         <input type="text" name="trainer_search" placeholder="CARI TRAINER"
                                class="flex-1 p-4 border-0 bg-white rounded-lg focus:ring-2 focus:ring-gray-400 text-gray-700"
                                value="{{ request('trainer_search') }}">
@@ -164,40 +176,57 @@
                         Tambah Personal Trainer
                     </a>
 
-                    <!-- Trainer List -->
                     <div class="flex flex-col flex-wrap gap-5">
                         @forelse($trainers as $trainer)
-                            <div class="flex flex-row justify-between bg-white rounded-lg shadow-sm overflow-hidden">
-                                <div class="flex flex-col justify-center pl-6 py-4 gap-1">
-                                    <p class="font-bold text-lg text-gray-900">Nama: {{ $trainer->nama_personal_trainer }}</p>
-                                    @if($trainer->user)
-                                        <p class="text-gray-600">Username: {{ $trainer->user->username }}</p>
+                        <div class="flex flex-row justify-between items-center bg-white rounded-lg shadow-sm overflow-hidden p-4">
+                            <div class="flex flex-row items-center gap-5">
+                                
+                                <div class="w-20 h-20 flex-shrink-0">
+                                    @if($trainer->foto_trainer)
+                                        <img src="{{ asset($trainer->foto_trainer) }}" alt="Foto {{ $trainer->nama_personal_trainer }}" class="w-full h-full object-cover rounded-full border-2 border-gym-red shadow-sm">
+                                    @else
+                                        <div class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-400">
+                                            <svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                                            </svg>
+                                        </div>
                                     @endif
-                                    <p class="text-gray-600">Jenis Kelamin: {{ $trainer->jenis_kelamin ?? 'N/A' }}</p>
-                                    <p class="text-gray-600">No. Telepon: {{ $trainer->no_telp }}</p>
                                 </div>
-                                <div class="flex  flex-row justify-center">
-                                    <div class="flex justify-center items-center px-6">
-                                        <a href="{{ route('cs.trainer.edit', $trainer->id_personal_trainer) }}">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                            </svg>
-                                        </a>
-                                    </div>
-                                    <form action="{{ route('cs.trainer.destroy', $trainer->id_personal_trainer) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus trainer ini?');" class="flex">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="px-6 bg-gym-red text-white hover:bg-red-600 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0a1 1 0 00-1 1v1h6V4a1 1 0 00-1-1m-4 0h4" />
-                                            </svg>
-                                        </button>
-                                    </form>
+
+                                <div class="flex flex-col justify-center gap-1">
+                                    <p class="font-bold text-lg text-gray-900">{{ $trainer->nama_personal_trainer }}</p>
+                                    @if($trainer->user)
+                                        <p class="text-sm text-gray-600 font-medium">@ {{ $trainer->user->username }}</p>
+                                    @endif
+                                    <p class="text-xs text-gray-500">{{ $trainer->jenis_kelamin ?? 'N/A' }} | {{ $trainer->no_telp }}</p>
                                 </div>
+                                
                             </div>
+
+                            <div class="flex flex-row justify-center gap-2">
+                                <a href="{{ route('cs.trainer.edit', $trainer->id_personal_trainer) }}" class="text-gray-500 hover:text-gym-red transition-colors p-2">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </a>
+                                <form action="{{ route('cs.trainer.destroy', $trainer->id_personal_trainer) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus trainer ini?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-gray-500 hover:text-red-600 transition-colors p-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0a1 1 0 00-1 1v1h6V4a1 1 0 00-1-1m-4 0h4" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                         @empty
                             <p class="text-gray-600 text-center py-8">Tidak ada personal trainer yang ditemukan.</p>
                         @endforelse
+                    </div>
+
+                    <div class="mt-4 w-full">
+                        {{ $trainers->appends(['tab' => 'trainerList', 'trainer_search' => request('trainer_search'), 'members_page' => request('members_page')])->links() }}
                     </div>
                 </div>
             </div>
@@ -235,8 +264,15 @@
                     const targetId = this.dataset.target;
                     const newUrl = new URL(window.location.href);
                     newUrl.searchParams.set('tab', targetId);
+                    
+                    // Optional: Hapus param pencarian jika pindah tab agar fresh
                     newUrl.searchParams.delete('member_search');
                     newUrl.searchParams.delete('trainer_search');
+                    
+                    // Reset param paginasi jika pindah tab agar kembali ke halaman 1
+                    newUrl.searchParams.delete('members_page');
+                    newUrl.searchParams.delete('trainers_page');
+                    
                     window.history.pushState({}, '', newUrl.toString());
                     showSection(targetId);
                 });
